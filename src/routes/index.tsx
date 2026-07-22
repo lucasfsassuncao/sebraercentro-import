@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
       { title: "Gestor de Projetos Sebrae" },
       { name: "description", content: "Gerencie projetos de atendimento, empresas participantes e horas de consultoria em uma plataforma moderna." },
       { property: "og:title", content: "Gestor de Projetos Sebrae" },
-      { property: "og:description", content: "Organize projetos de consultoria Sebrae com dashboards, controle de horas e histórico completo." },
+      { property: "og:description", content: "Gerencie projetos de atendimento, empresas participantes e horas de consultoria em uma plataforma moderna." },
     ],
   }),
   component: Landing,
