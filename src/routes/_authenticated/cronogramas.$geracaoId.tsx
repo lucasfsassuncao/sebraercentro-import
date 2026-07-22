@@ -50,7 +50,7 @@ function CronogramaDetail() {
   async function salvar() {
     for (const r of rows) if (Number(r.horas) > MAX_HORAS_DIA) return toast.error("Nenhum atendimento pode passar de 8h");
     // Atualiza cada linha existente; identifica removidas.
-    const original = data.linhas;
+    const original = data?.linhas ?? [];
     const idsAtuais = new Set(rows.map((r) => r.id));
     const removidas = original.filter((o) => !idsAtuais.has(o.id));
     for (const r of rows) {
