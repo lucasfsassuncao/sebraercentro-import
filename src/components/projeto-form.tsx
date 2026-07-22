@@ -35,7 +35,7 @@ export function ProjetoForm({ trigger, projeto, onSaved }: { trigger: React.Reac
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setSaving(false); return; }
-    const payload = { ...form, user_id: u.user.id };
+    const payload: any = { ...form, user_id: u.user.id };
     const { error } = form.id
       ? await supabase.from("projetos").update(payload).eq("id", form.id)
       : await supabase.from("projetos").insert(payload);

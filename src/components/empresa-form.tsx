@@ -46,7 +46,7 @@ export function EmpresaForm({
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setSaving(false); return; }
-    const payload = { ...form, user_id: u.user.id, horas_previstas: Number(form.horas_previstas) || 0, horas_lancadas: Number(form.horas_lancadas) || 0 };
+    const payload: any = { ...form, user_id: u.user.id, horas_previstas: Number(form.horas_previstas) || 0, horas_lancadas: Number(form.horas_lancadas) || 0 };
     const { error } = form.id
       ? await supabase.from("empresas").update(payload).eq("id", form.id)
       : await supabase.from("empresas").insert(payload);
