@@ -17,9 +17,12 @@ import { Route as AuthenticatedProjetosRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedEmpresasRouteImport } from './routes/_authenticated/empresas'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCronogramasRouteImport } from './routes/_authenticated/cronogramas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
+import { Route as AuthenticatedCronogramasIndexRouteImport } from './routes/_authenticated/cronogramas.index'
 import { Route as AuthenticatedProjetosIdRouteImport } from './routes/_authenticated/projetos.$id'
+import { Route as AuthenticatedCronogramasGeracaoIdRouteImport } from './routes/_authenticated/cronogramas.$geracaoId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -60,6 +63,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCronogramasRoute =
+  AuthenticatedCronogramasRouteImport.update({
+    id: '/cronogramas',
+    path: '/cronogramas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConfiguracoesRoute =
   AuthenticatedConfiguracoesRouteImport.update({
     id: '/configuracoes',
@@ -72,22 +81,37 @@ const AuthenticatedProjetosIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedProjetosRoute,
   } as any)
+const AuthenticatedCronogramasIndexRoute =
+  AuthenticatedCronogramasIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCronogramasRoute,
+  } as any)
 const AuthenticatedProjetosIdRoute = AuthenticatedProjetosIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => AuthenticatedProjetosRoute,
 } as any)
+const AuthenticatedCronogramasGeracaoIdRoute =
+  AuthenticatedCronogramasGeracaoIdRouteImport.update({
+    id: '/$geracaoId',
+    path: '/$geracaoId',
+    getParentRoute: () => AuthenticatedCronogramasRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/cronogramas': typeof AuthenticatedCronogramasRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/projetos': typeof AuthenticatedProjetosRouteWithChildren
+  '/cronogramas/$geracaoId': typeof AuthenticatedCronogramasGeracaoIdRoute
   '/projetos/$id': typeof AuthenticatedProjetosIdRoute
+  '/cronogramas/': typeof AuthenticatedCronogramasIndexRoute
   '/projetos/': typeof AuthenticatedProjetosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -98,7 +122,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/cronogramas/$geracaoId': typeof AuthenticatedCronogramasGeracaoIdRoute
   '/projetos/$id': typeof AuthenticatedProjetosIdRoute
+  '/cronogramas': typeof AuthenticatedCronogramasIndexRoute
   '/projetos': typeof AuthenticatedProjetosIndexRoute
 }
 export interface FileRoutesById {
@@ -108,11 +134,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/cronogramas': typeof AuthenticatedCronogramasRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/empresas': typeof AuthenticatedEmpresasRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/projetos': typeof AuthenticatedProjetosRouteWithChildren
+  '/_authenticated/cronogramas/$geracaoId': typeof AuthenticatedCronogramasGeracaoIdRoute
   '/_authenticated/projetos/$id': typeof AuthenticatedProjetosIdRoute
+  '/_authenticated/cronogramas/': typeof AuthenticatedCronogramasIndexRoute
   '/_authenticated/projetos/': typeof AuthenticatedProjetosIndexRoute
 }
 export interface FileRouteTypes {
@@ -122,11 +151,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/sitemap.xml'
     | '/configuracoes'
+    | '/cronogramas'
     | '/dashboard'
     | '/empresas'
     | '/historico'
     | '/projetos'
+    | '/cronogramas/$geracaoId'
     | '/projetos/$id'
+    | '/cronogramas/'
     | '/projetos/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -137,7 +169,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/empresas'
     | '/historico'
+    | '/cronogramas/$geracaoId'
     | '/projetos/$id'
+    | '/cronogramas'
     | '/projetos'
   id:
     | '__root__'
@@ -146,11 +180,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/sitemap.xml'
     | '/_authenticated/configuracoes'
+    | '/_authenticated/cronogramas'
     | '/_authenticated/dashboard'
     | '/_authenticated/empresas'
     | '/_authenticated/historico'
     | '/_authenticated/projetos'
+    | '/_authenticated/cronogramas/$geracaoId'
     | '/_authenticated/projetos/$id'
+    | '/_authenticated/cronogramas/'
     | '/_authenticated/projetos/'
   fileRoutesById: FileRoutesById
 }
@@ -219,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cronogramas': {
+      id: '/_authenticated/cronogramas'
+      path: '/cronogramas'
+      fullPath: '/cronogramas'
+      preLoaderRoute: typeof AuthenticatedCronogramasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/configuracoes': {
       id: '/_authenticated/configuracoes'
       path: '/configuracoes'
@@ -233,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjetosIndexRouteImport
       parentRoute: typeof AuthenticatedProjetosRoute
     }
+    '/_authenticated/cronogramas/': {
+      id: '/_authenticated/cronogramas/'
+      path: '/'
+      fullPath: '/cronogramas/'
+      preLoaderRoute: typeof AuthenticatedCronogramasIndexRouteImport
+      parentRoute: typeof AuthenticatedCronogramasRoute
+    }
     '/_authenticated/projetos/$id': {
       id: '/_authenticated/projetos/$id'
       path: '/$id'
@@ -240,8 +291,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjetosIdRouteImport
       parentRoute: typeof AuthenticatedProjetosRoute
     }
+    '/_authenticated/cronogramas/$geracaoId': {
+      id: '/_authenticated/cronogramas/$geracaoId'
+      path: '/$geracaoId'
+      fullPath: '/cronogramas/$geracaoId'
+      preLoaderRoute: typeof AuthenticatedCronogramasGeracaoIdRouteImport
+      parentRoute: typeof AuthenticatedCronogramasRoute
+    }
   }
 }
+
+interface AuthenticatedCronogramasRouteChildren {
+  AuthenticatedCronogramasGeracaoIdRoute: typeof AuthenticatedCronogramasGeracaoIdRoute
+  AuthenticatedCronogramasIndexRoute: typeof AuthenticatedCronogramasIndexRoute
+}
+
+const AuthenticatedCronogramasRouteChildren: AuthenticatedCronogramasRouteChildren =
+  {
+    AuthenticatedCronogramasGeracaoIdRoute:
+      AuthenticatedCronogramasGeracaoIdRoute,
+    AuthenticatedCronogramasIndexRoute: AuthenticatedCronogramasIndexRoute,
+  }
+
+const AuthenticatedCronogramasRouteWithChildren =
+  AuthenticatedCronogramasRoute._addFileChildren(
+    AuthenticatedCronogramasRouteChildren,
+  )
 
 interface AuthenticatedProjetosRouteChildren {
   AuthenticatedProjetosIdRoute: typeof AuthenticatedProjetosIdRoute
@@ -260,6 +335,7 @@ const AuthenticatedProjetosRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedCronogramasRoute: typeof AuthenticatedCronogramasRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmpresasRoute: typeof AuthenticatedEmpresasRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
@@ -268,6 +344,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedCronogramasRoute: AuthenticatedCronogramasRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmpresasRoute: AuthenticatedEmpresasRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
@@ -286,13 +363,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

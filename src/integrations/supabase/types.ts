@@ -44,6 +44,134 @@ export type Database = {
         }
         Relationships: []
       }
+      cronograma_geracoes: {
+        Row: {
+          created_at: string
+          id: string
+          observacoes: string | null
+          projeto_id: string
+          total_atendimentos: number
+          total_empresas: number
+          total_horas: number
+          user_id: string
+          usuario: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          projeto_id: string
+          total_atendimentos?: number
+          total_empresas?: number
+          total_horas?: number
+          user_id: string
+          usuario?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          projeto_id?: string
+          total_atendimentos?: number
+          total_empresas?: number
+          total_horas?: number
+          user_id?: string
+          usuario?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cronograma_geracoes_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cronogramas: {
+        Row: {
+          codigo_categoria: string | null
+          codigo_disponibilizacao: string | null
+          codigo_ibge: string | null
+          codigo_meio_atendimento: string | null
+          codigo_tema: string | null
+          consultor: string | null
+          cpf_consultor: string | null
+          created_at: string
+          data: string
+          descricao: string | null
+          empresa_id: string
+          etapa: string | null
+          geracao_id: string | null
+          horas: number
+          id: string
+          municipio: string | null
+          ordem: number
+          projeto_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          codigo_categoria?: string | null
+          codigo_disponibilizacao?: string | null
+          codigo_ibge?: string | null
+          codigo_meio_atendimento?: string | null
+          codigo_tema?: string | null
+          consultor?: string | null
+          cpf_consultor?: string | null
+          created_at?: string
+          data: string
+          descricao?: string | null
+          empresa_id: string
+          etapa?: string | null
+          geracao_id?: string | null
+          horas?: number
+          id?: string
+          municipio?: string | null
+          ordem?: number
+          projeto_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          codigo_categoria?: string | null
+          codigo_disponibilizacao?: string | null
+          codigo_ibge?: string | null
+          codigo_meio_atendimento?: string | null
+          codigo_tema?: string | null
+          consultor?: string | null
+          cpf_consultor?: string | null
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          empresa_id?: string
+          etapa?: string | null
+          geracao_id?: string | null
+          horas?: number
+          id?: string
+          municipio?: string | null
+          ordem?: number
+          projeto_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cronogramas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cronogramas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           cnpj: string | null
@@ -145,6 +273,30 @@ export type Database = {
           },
         ]
       }
+      feriados: {
+        Row: {
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          descricao?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       historico: {
         Row: {
           created_at: string
@@ -228,8 +380,16 @@ export type Database = {
       }
       projetos: {
         Row: {
+          codigo_categoria: string | null
+          codigo_disponibilizacao: string | null
+          codigo_ibge: string | null
+          codigo_meio_atendimento: string | null
+          codigo_tema: string | null
           consultor: string | null
+          cpf_consultor: string | null
           created_at: string
+          data_inicial: string | null
+          descricao_padrao: string | null
           id: string
           modelo: string | null
           municipio: string | null
@@ -240,8 +400,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          codigo_categoria?: string | null
+          codigo_disponibilizacao?: string | null
+          codigo_ibge?: string | null
+          codigo_meio_atendimento?: string | null
+          codigo_tema?: string | null
           consultor?: string | null
+          cpf_consultor?: string | null
           created_at?: string
+          data_inicial?: string | null
+          descricao_padrao?: string | null
           id?: string
           modelo?: string | null
           municipio?: string | null
@@ -252,8 +420,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          codigo_categoria?: string | null
+          codigo_disponibilizacao?: string | null
+          codigo_ibge?: string | null
+          codigo_meio_atendimento?: string | null
+          codigo_tema?: string | null
           consultor?: string | null
+          cpf_consultor?: string | null
           created_at?: string
+          data_inicial?: string | null
+          descricao_padrao?: string | null
           id?: string
           modelo?: string | null
           municipio?: string | null
