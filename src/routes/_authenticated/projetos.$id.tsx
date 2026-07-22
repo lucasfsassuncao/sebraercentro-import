@@ -43,8 +43,8 @@ function ProjetoDetail() {
   const empresas = data?.empresas ?? [];
   const geracoes = data?.geracoes ?? [];
 
-  const empresasComPrevistas = useMemo(() => empresas.map((e) => {
-    const etapasSel = ETAPAS.filter((t) => e[`etapa_${t.toLowerCase()}`]) as Etapa[];
+  const empresasComPrevistas = useMemo(() => empresas.map((e: any) => {
+    const etapasSel = ETAPAS.filter((t) => (e as any)[`etapa_${t.toLowerCase()}`]) as Etapa[];
     const previstas = totalHoras(p?.modelo, e.porte, etapasSel);
     return { ...e, _previstas: previstas };
   }), [empresas, p?.modelo]);
@@ -133,7 +133,7 @@ function ProjetoDetail() {
                 <TableRow><TableCell colSpan={9} className="py-8 text-center text-muted-foreground">Nenhuma empresa cadastrada.</TableCell></TableRow>
               )}
               {empresasComPrevistas.map((e) => {
-                const etapasSel = ETAPAS.filter((t) => e[`etapa_${t.toLowerCase()}`]);
+                const etapasSel = ETAPAS.filter((t) => (e as any)[`etapa_${t.toLowerCase()}`]);
                 const empresaPct = e._previstas ? Math.min(100, Math.round((Number(e.horas_lancadas ?? 0) / e._previstas) * 100)) : 0;
                 const restantes = Math.max(0, e._previstas - Number(e.horas_lancadas ?? 0));
                 return (
