@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, FolderKanban, Building2, History, Settings, ClipboardList, LogOut } from "lucide-react";
+import { LayoutDashboard, FolderKanban, Building2, History, Settings, ClipboardList, LogOut, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ const nav = [
   { title: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { title: "Projetos", to: "/projetos", icon: FolderKanban },
   { title: "Empresas", to: "/empresas", icon: Building2 },
+  { title: "Cronogramas", to: "/cronogramas", icon: CalendarClock },
   { title: "Histórico", to: "/historico", icon: History },
   { title: "Configurações", to: "/configuracoes", icon: Settings },
 ] as const;
