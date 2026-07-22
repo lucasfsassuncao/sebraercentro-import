@@ -14,7 +14,257 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      configuracoes: {
+        Row: {
+          cpf_consultor: string | null
+          descricao_padrao: string | null
+          modelos: Json
+          municipios: Json
+          temas: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cpf_consultor?: string | null
+          descricao_padrao?: string | null
+          modelos?: Json
+          municipios?: Json
+          temas?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cpf_consultor?: string | null
+          descricao_padrao?: string | null
+          modelos?: Json
+          municipios?: Json
+          temas?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      empresas: {
+        Row: {
+          cnpj: string | null
+          codigo_categoria: string | null
+          codigo_disponibilizacao: string | null
+          codigo_ibge: string | null
+          codigo_meio_atendimento: string | null
+          codigo_tema: string | null
+          consultor: string | null
+          cpf_cliente: string | null
+          created_at: string
+          descricao: string | null
+          etapa_t0: boolean
+          etapa_t1: boolean
+          etapa_t2: boolean
+          etapa_t3: boolean
+          etapa_t4: boolean
+          horas_lancadas: number
+          horas_previstas: number
+          id: string
+          modelo: string | null
+          municipio: string | null
+          observacoes: string | null
+          porte: string | null
+          projeto_id: string
+          razao_social: string
+          status: string
+          ultima_data: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cnpj?: string | null
+          codigo_categoria?: string | null
+          codigo_disponibilizacao?: string | null
+          codigo_ibge?: string | null
+          codigo_meio_atendimento?: string | null
+          codigo_tema?: string | null
+          consultor?: string | null
+          cpf_cliente?: string | null
+          created_at?: string
+          descricao?: string | null
+          etapa_t0?: boolean
+          etapa_t1?: boolean
+          etapa_t2?: boolean
+          etapa_t3?: boolean
+          etapa_t4?: boolean
+          horas_lancadas?: number
+          horas_previstas?: number
+          id?: string
+          modelo?: string | null
+          municipio?: string | null
+          observacoes?: string | null
+          porte?: string | null
+          projeto_id: string
+          razao_social: string
+          status?: string
+          ultima_data?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cnpj?: string | null
+          codigo_categoria?: string | null
+          codigo_disponibilizacao?: string | null
+          codigo_ibge?: string | null
+          codigo_meio_atendimento?: string | null
+          codigo_tema?: string | null
+          consultor?: string | null
+          cpf_cliente?: string | null
+          created_at?: string
+          descricao?: string | null
+          etapa_t0?: boolean
+          etapa_t1?: boolean
+          etapa_t2?: boolean
+          etapa_t3?: boolean
+          etapa_t4?: boolean
+          horas_lancadas?: number
+          horas_previstas?: number
+          id?: string
+          modelo?: string | null
+          municipio?: string | null
+          observacoes?: string | null
+          porte?: string | null
+          projeto_id?: string
+          razao_social?: string
+          status?: string
+          ultima_data?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      historico: {
+        Row: {
+          created_at: string
+          data: string
+          empresa_id: string | null
+          empresa_nome: string | null
+          id: string
+          observacoes: string | null
+          projeto_id: string | null
+          projeto_nome: string | null
+          status: string | null
+          user_id: string
+          usuario: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          empresa_id?: string | null
+          empresa_nome?: string | null
+          id?: string
+          observacoes?: string | null
+          projeto_id?: string | null
+          projeto_nome?: string | null
+          status?: string | null
+          user_id: string
+          usuario?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          empresa_id?: string | null
+          empresa_nome?: string | null
+          id?: string
+          observacoes?: string | null
+          projeto_id?: string | null
+          projeto_nome?: string | null
+          status?: string | null
+          user_id?: string
+          usuario?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historico_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          nome: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          nome?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          nome?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projetos: {
+        Row: {
+          consultor: string | null
+          created_at: string
+          id: string
+          modelo: string | null
+          municipio: string | null
+          nome: string
+          observacoes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consultor?: string | null
+          created_at?: string
+          id?: string
+          modelo?: string | null
+          municipio?: string | null
+          nome: string
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consultor?: string | null
+          created_at?: string
+          id?: string
+          modelo?: string | null
+          municipio?: string | null
+          nome?: string
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
