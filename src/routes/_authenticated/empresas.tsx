@@ -56,12 +56,13 @@ function EmpresasList() {
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
       if (q) {
         const s = q.toLowerCase();
-        return [e.razao_social, e.cnpj, e.municipio, e.modelo, projetoNome(e.projeto_id)]
+        const p = projetoById[e.projeto_id];
+        return [e.razao_social, e.cnpj, p?.municipio, p?.modelo, p?.nome]
           .filter(Boolean).some((v) => v!.toLowerCase().includes(s));
       }
       return true;
     });
-  }, [empresas, q, projetoFilter, statusFilter, projetos]);
+  }, [empresas, q, projetoFilter, statusFilter, projetoById]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
