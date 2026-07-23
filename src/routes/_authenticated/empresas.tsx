@@ -36,7 +36,7 @@ function EmpresasList() {
     queryFn: async () => {
       const [{ data: es }, { data: ps }] = await Promise.all([
         supabase.from("empresas").select("*").order("razao_social"),
-        supabase.from("projetos").select("id,nome"),
+        supabase.from("projetos").select("id,nome,municipio,modelo"),
       ]);
       return { empresas: es ?? [], projetos: ps ?? [] };
     },
@@ -44,7 +44,11 @@ function EmpresasList() {
 
   const empresas = data?.empresas ?? [];
   const projetos = data?.projetos ?? [];
-  const projetoNome = (id: string) => projetos.find((p) => p.id === id)?.nome ?? "—";
+  const projetoById = useMemo(
+    () => Object.fromEntries(projetos.map((p) => [p.id, p])) as Record<string, typeof projetos[number]>,
+    [projetos],
+  );
+  const projetoNome = (id: string) => projetoById[id]?.nome ?? "—";
 
   const filtered = useMemo(() => {
     return empresas.filter((e) => {
