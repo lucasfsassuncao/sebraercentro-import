@@ -60,6 +60,7 @@ export interface LinhaCronograma {
 export interface ValidacaoResultado {
   valido: boolean;
   mensagem?: string;
+  message?: string;
 }
 
 /**
