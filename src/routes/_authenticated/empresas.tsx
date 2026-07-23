@@ -131,8 +131,8 @@ function EmpresasList() {
                   <TableCell className="font-medium">{e.razao_social}</TableCell>
                   <TableCell className="text-xs">{projetoNome(e.projeto_id)}</TableCell>
                   <TableCell className="text-xs">{e.cnpj || "—"}</TableCell>
-                  <TableCell className="text-xs">{e.municipio || "—"}</TableCell>
-                  <TableCell className="text-xs">{e.modelo}</TableCell>
+                  <TableCell className="text-xs">{projetoById[e.projeto_id]?.municipio || "—"}</TableCell>
+                  <TableCell className="text-xs">{projetoById[e.projeto_id]?.modelo || "—"}</TableCell>
                   <TableCell className="w-40"><div className="flex items-center gap-2"><Progress value={pct} className="h-2" /><span className="text-xs">{pct}%</span></div></TableCell>
                   <TableCell><Badge variant={e.status === "concluida" ? "default" : "secondary"}>{e.status}</Badge></TableCell>
                   <TableCell>
