@@ -8,11 +8,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MAX_HORAS_DIA } from "@/lib/horas";
+import { MAX_HORAS_DIA, ETAPAS, totalHoras, type Etapa } from "@/lib/horas";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  validarLinhasCronograma,
+  recalcularHorasEmpresa,
+} from "@/lib/motor-cronogramas";
 
 export const Route = createFileRoute("/_authenticated/cronogramas/$geracaoId")({
   head: () => ({ meta: [{ title: "Cronograma — Gestor Sebrae" }, { name: "description", content: "Detalhes do cronograma gerado." }] }),
@@ -22,16 +26,20 @@ export const Route = createFileRoute("/_authenticated/cronogramas/$geracaoId")({
 function CronogramaDetail() {
   const { geracaoId } = Route.useParams();
   const qc = useQueryClient();
+  const [saving, setSaving] = useState(false);
 
   const { data } = useQuery({
     queryKey: ["cronograma-detail", geracaoId],
     queryFn: async () => {
-      const [{ data: g }, { data: linhas }, { data: empresas }] = await Promise.all([
-        supabase.from("cronograma_geracoes").select("*").eq("id", geracaoId).maybeSingle(),
+      const { data: g } = await supabase.from("cronograma_geracoes").select("*").eq("id", geracaoId).maybeSingle();
+      if (!g) return { geracao: null, linhas: [], empresas: [], projeto: null };
+
+      const [{ data: linhas }, { data: empresas }, { data: proj }] = await Promise.all([
         supabase.from("cronogramas").select("*").eq("geracao_id", geracaoId).order("data").order("ordem"),
-        supabase.from("empresas").select("id,razao_social"),
+        supabase.from("empresas").select("*").eq("projeto_id", g.projeto_id),
+        supabase.from("projetos").select("*").eq("id", g.projeto_id).maybeSingle(),
       ]);
-      return { geracao: g, linhas: linhas ?? [], empresas: empresas ?? [] };
+      return { geracao: g, linhas: linhas ?? [], empresas: empresas ?? [], projeto: proj };
     },
   });
 
@@ -48,18 +56,62 @@ function CronogramaDetail() {
   function removeRow(idx: number) { setRows((rs) => rs.filter((_, i) => i !== idx)); }
 
   async function salvar() {
-    for (const r of rows) if (Number(r.horas) > MAX_HORAS_DIA) return toast.error("Nenhum atendimento pode passar de 8h");
-    // Atualiza cada linha existente; identifica removidas.
+    setSaving(true);
+
+    // Agrupa as linhas por empresa para validação individual
+    const linhasPorEmpresa: Record<string, typeof rows> = {};
+    for (const r of rows) {
+      if (!linhasPorEmpresa[r.empresa_id]) {
+        linhasPorEmpresa[r.empresa_id] = [];
+      }
+      linhasPorEmpresa[r.empresa_id].push(r);
+    }
+
+    // Identifica quais empresas foram afetadas (tanto no salvamento quanto na remoção)
     const original = data?.linhas ?? [];
     const idsAtuais = new Set(rows.map((r) => r.id));
     const removidas = original.filter((o) => !idsAtuais.has(o.id));
+    const empresasAfetadas = new Set<string>();
+    for (const r of rows) empresasAfetadas.add(r.empresa_id);
+    for (const r of removidas) empresasAfetadas.add(r.empresa_id);
+
+    // Validações por empresa usando o motor inteligente
+    for (const empresaId of Object.keys(linhasPorEmpresa)) {
+      const e = data.empresas.find((x) => x.id === empresaId);
+      const arr = linhasPorEmpresa[empresaId];
+      if (!e) continue;
+
+      const etapasSel = ETAPAS.filter((t) => e[`etapa_${t.toLowerCase()}`]) as Etapa[];
+      const modeloEfetivo = e.modelo || data.projeto?.modelo;
+      const porteEfetivo = e.porte || "ME";
+      const totalPrevisto = totalHoras(modeloEfetivo, porteEfetivo, etapasSel);
+
+      const val = validarLinhasCronograma(arr, totalPrevisto);
+      if (!val.valido) {
+        setSaving(false);
+        return toast.error(`${e.razao_social}: ${val.mensagem || val.message}`);
+      }
+    }
+
+    // Salva as alterações das linhas existentes
     for (const r of rows) {
       const { error } = await supabase.from("cronogramas").update({
         data: r.data, horas: Number(r.horas), etapa: r.etapa, descricao: r.descricao,
       }).eq("id", r.id);
-      if (error) return toast.error(error.message);
+      if (error) {
+        setSaving(false);
+        return toast.error(error.message);
+      }
     }
-    for (const r of removidas) await supabase.from("cronogramas").delete().eq("id", r.id);
+    
+    // Remove as linhas deletadas
+    for (const r of removidas) {
+      const { error } = await supabase.from("cronogramas").delete().eq("id", r.id);
+      if (error) {
+        setSaving(false);
+        return toast.error(error.message);
+      }
+    }
 
     // Atualiza contadores da geração
     const totalHrs = rows.reduce((s, r) => s + Number(r.horas || 0), 0);
@@ -67,14 +119,51 @@ function CronogramaDetail() {
       total_atendimentos: rows.length, total_horas: totalHrs,
     }).eq("id", geracaoId);
 
-    toast.success("Cronograma atualizado");
+    // Recalcula horas no banco para cada empresa afetada
+    for (const id of empresasAfetadas) {
+      await recalcularHorasEmpresa(id);
+    }
+
+    setSaving(false);
+    toast.success("Cronograma atualizado com sucesso");
     qc.invalidateQueries();
   }
 
   async function excluirGeracao() {
-    const { error } = await supabase.from("cronograma_geracoes").delete().eq("id", geracaoId);
-    if (error) return toast.error(error.message);
-    toast.success("Geração removida");
+    setSaving(true);
+    
+    // 1. Identifica todas as empresas afetadas pela geração atual
+    const empresasAfetadas = new Set<string>(rows.map(r => r.empresa_id));
+    
+    // 2. Remove todas as linhas de atendimento dessa geração primeiro para evitar órfãos
+    const { error: errLinhas } = await supabase
+      .from("cronogramas")
+      .delete()
+      .eq("geracao_id", geracaoId);
+    
+    if (errLinhas) {
+      setSaving(false);
+      return toast.error(errLinhas.message);
+    }
+    
+    // 3. Remove o registro da geração
+    const { error: errGer } = await supabase
+      .from("cronograma_geracoes")
+      .delete()
+      .eq("id", geracaoId);
+      
+    if (errGer) {
+      setSaving(false);
+      return toast.error(errGer.message);
+    }
+    
+    // 4. Recalcula as horas e última data no banco para todas as empresas participantes
+    for (const id of empresasAfetadas) {
+      await recalcularHorasEmpresa(id);
+    }
+
+    setSaving(false);
+    toast.success("Geração removida com sucesso");
     qc.invalidateQueries();
     history.back();
   }
@@ -96,7 +185,7 @@ function CronogramaDetail() {
         </div>
         <div className="flex gap-2">
           <AlertDialog>
-            <AlertDialogTrigger asChild><Button variant="outline"><Trash2 className="h-4 w-4" /> Excluir</Button></AlertDialogTrigger>
+            <AlertDialogTrigger asChild><Button variant="outline" disabled={saving}><Trash2 className="h-4 w-4" /> Excluir</Button></AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader><AlertDialogTitle>Excluir cronograma?</AlertDialogTitle></AlertDialogHeader>
               <AlertDialogFooter>
@@ -105,7 +194,7 @@ function CronogramaDetail() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button onClick={salvar}><Save className="h-4 w-4" /> Salvar alterações</Button>
+          <Button onClick={salvar} disabled={saving}><Save className="h-4 w-4" /> {saving ? "Salvando…" : "Salvar alterações"}</Button>
         </div>
       </div>
 

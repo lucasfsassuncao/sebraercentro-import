@@ -175,8 +175,15 @@ export type Database = {
       empresas: {
         Row: {
           cnpj: string | null
+          codigo_categoria: string | null
+          codigo_disponibilizacao: string | null
+          codigo_ibge: string | null
+          codigo_meio_atendimento: string | null
+          codigo_tema: string | null
+          consultor: string | null
           cpf_cliente: string | null
           created_at: string
+          descricao: string | null
           etapa_t0: boolean
           etapa_t1: boolean
           etapa_t2: boolean
@@ -185,6 +192,8 @@ export type Database = {
           horas_lancadas: number
           horas_previstas: number
           id: string
+          modelo: string | null
+          municipio: string | null
           observacoes: string | null
           porte: string | null
           projeto_id: string
@@ -196,8 +205,15 @@ export type Database = {
         }
         Insert: {
           cnpj?: string | null
+          codigo_categoria?: string | null
+          codigo_disponibilizacao?: string | null
+          codigo_ibge?: string | null
+          codigo_meio_atendimento?: string | null
+          codigo_tema?: string | null
+          consultor?: string | null
           cpf_cliente?: string | null
           created_at?: string
+          descricao?: string | null
           etapa_t0?: boolean
           etapa_t1?: boolean
           etapa_t2?: boolean
@@ -206,6 +222,8 @@ export type Database = {
           horas_lancadas?: number
           horas_previstas?: number
           id?: string
+          modelo?: string | null
+          municipio?: string | null
           observacoes?: string | null
           porte?: string | null
           projeto_id: string
@@ -217,8 +235,15 @@ export type Database = {
         }
         Update: {
           cnpj?: string | null
+          codigo_categoria?: string | null
+          codigo_disponibilizacao?: string | null
+          codigo_ibge?: string | null
+          codigo_meio_atendimento?: string | null
+          codigo_tema?: string | null
+          consultor?: string | null
           cpf_cliente?: string | null
           created_at?: string
+          descricao?: string | null
           etapa_t0?: boolean
           etapa_t1?: boolean
           etapa_t2?: boolean
@@ -227,6 +252,8 @@ export type Database = {
           horas_lancadas?: number
           horas_previstas?: number
           id?: string
+          modelo?: string | null
+          municipio?: string | null
           observacoes?: string | null
           porte?: string | null
           projeto_id?: string
