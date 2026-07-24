@@ -62,11 +62,12 @@ function CronogramasList() {
               <TableHead>Empresas</TableHead>
               <TableHead>Atendimentos</TableHead>
               <TableHead>Total de horas</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {geracoes.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="py-16 text-center">
+              <TableRow><TableCell colSpan={7} className="py-16 text-center">
                 <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-muted"><CalendarClock className="h-6 w-6 text-muted-foreground" /></div>
                 <div className="mt-3 font-medium">Nenhum cronograma gerado</div>
                 <div className="text-sm text-muted-foreground">Gere um cronograma a partir da tela do projeto.</div>
@@ -84,6 +85,11 @@ function CronogramasList() {
                 <TableCell>{g.total_empresas}</TableCell>
                 <TableCell>{g.total_atendimentos}</TableCell>
                 <TableCell>{g.total_horas}h</TableCell>
+                <TableCell className="text-right">
+                  <Button size="sm" variant="outline" disabled={exporting === g.id} onClick={() => exportar(g.id)}>
+                    <FileSpreadsheet className="h-4 w-4" /> {exporting === g.id ? "Exportando…" : "Exportar"}
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
