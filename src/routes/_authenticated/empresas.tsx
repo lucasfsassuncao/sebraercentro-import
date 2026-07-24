@@ -36,7 +36,7 @@ function EmpresasList() {
     queryFn: async () => {
       const [{ data: es }, { data: ps }] = await Promise.all([
         supabase.from("empresas").select("*").order("razao_social"),
-        supabase.from("projetos").select("id,nome"),
+        supabase.from("projetos").select("id,nome,municipio,modelo"),
       ]);
       return { empresas: es ?? [], projetos: ps ?? [] };
     },
@@ -44,7 +44,8 @@ function EmpresasList() {
 
   const empresas = data?.empresas ?? [];
   const projetos = data?.projetos ?? [];
-  const projetoNome = (id: string) => projetos.find((p) => p.id === id)?.nome ?? "—";
+  const projetoById = (id: string) => projetos.find((p) => p.id === id);
+  const projetoNome = (id: string) => projetoById(id)?.nome ?? "—";
 
   const filtered = useMemo(() => {
     return empresas.filter((e) => {
@@ -52,7 +53,8 @@ function EmpresasList() {
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
       if (q) {
         const s = q.toLowerCase();
-        return [e.razao_social, e.cnpj, e.municipio, e.modelo, projetoNome(e.projeto_id)]
+        const proj = projetoById(e.projeto_id);
+        return [e.razao_social, e.cnpj, proj?.municipio, proj?.modelo, proj?.nome]
           .filter(Boolean).some((v) => v!.toLowerCase().includes(s));
       }
       return true;
@@ -126,8 +128,8 @@ function EmpresasList() {
                   <TableCell className="font-medium">{e.razao_social}</TableCell>
                   <TableCell className="text-xs">{projetoNome(e.projeto_id)}</TableCell>
                   <TableCell className="text-xs">{e.cnpj || "—"}</TableCell>
-                  <TableCell className="text-xs">{e.municipio || "—"}</TableCell>
-                  <TableCell className="text-xs">{e.modelo}</TableCell>
+                  <TableCell className="text-xs">{projetoById(e.projeto_id)?.municipio || "—"}</TableCell>
+                  <TableCell className="text-xs">{projetoById(e.projeto_id)?.modelo || "—"}</TableCell>
                   <TableCell className="w-40"><div className="flex items-center gap-2"><Progress value={pct} className="h-2" /><span className="text-xs">{pct}%</span></div></TableCell>
                   <TableCell><Badge variant={e.status === "concluida" ? "default" : "secondary"}>{e.status}</Badge></TableCell>
                   <TableCell>

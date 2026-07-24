@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, FileSpreadsheet } from "lucide-react";
+import { ExportService } from "@/lib/export/export-service";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MAX_HORAS_DIA, ETAPAS, totalHoras, type Etapa } from "@/lib/horas";
@@ -77,12 +78,12 @@ function CronogramaDetail() {
 
     // Validações por empresa usando o motor inteligente
     for (const empresaId of Object.keys(linhasPorEmpresa)) {
-      const e = data.empresas.find((x) => x.id === empresaId);
+      const e = data?.empresas.find((x) => x.id === empresaId) as any;
       const arr = linhasPorEmpresa[empresaId];
       if (!e) continue;
 
       const etapasSel = ETAPAS.filter((t) => e[`etapa_${t.toLowerCase()}`]) as Etapa[];
-      const modeloEfetivo = e.modelo || data.projeto?.modelo;
+      const modeloEfetivo = e.modelo || data?.projeto?.modelo;
       const porteEfetivo = e.porte || "ME";
       const totalPrevisto = totalHoras(modeloEfetivo, porteEfetivo, etapasSel);
 
@@ -184,6 +185,22 @@ function CronogramaDetail() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" disabled={saving} onClick={async () => {
+            setSaving(true);
+            const r = await ExportService.exportarGeracao(geracaoId);
+            setSaving(false);
+            if (r.ok) {
+              toast.success(`Exportado: ${r.filename} (${r.quantidade} registros)`);
+              qc.invalidateQueries();
+            } else {
+              toast.error(r.mensagem || "Falha na exportação");
+              if (r.erros?.length) {
+                r.erros.slice(0, 5).forEach((e) => toast.error(`Linha ${e.linha} · ${e.campo}: ${e.mensagem}`));
+              }
+            }
+          }}>
+            <FileSpreadsheet className="h-4 w-4" /> Exportar Consultorias
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild><Button variant="outline" disabled={saving}><Trash2 className="h-4 w-4" /> Excluir</Button></AlertDialogTrigger>
             <AlertDialogContent>

@@ -1,9 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, FileSpreadsheet } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
+import { ExportService } from "@/lib/export/export-service";
 
 export const Route = createFileRoute("/_authenticated/cronogramas/")({
   head: () => ({ meta: [{ title: "Cronogramas — Gestor Sebrae" }, { name: "description", content: "Cronogramas de atendimento gerados." }] }),
@@ -11,6 +15,9 @@ export const Route = createFileRoute("/_authenticated/cronogramas/")({
 });
 
 function CronogramasList() {
+  const qc = useQueryClient();
+  const [exporting, setExporting] = useState<string | null>(null);
+
   const { data } = useQuery({
     queryKey: ["cronograma-geracoes"],
     queryFn: async () => {
@@ -24,6 +31,19 @@ function CronogramasList() {
 
   const geracoes = data?.geracoes ?? [];
   const nome = (id: string) => data?.projetos.find((p) => p.id === id)?.nome ?? "—";
+
+  async function exportar(geracaoId: string) {
+    setExporting(geracaoId);
+    const r = await ExportService.exportarGeracao(geracaoId);
+    setExporting(null);
+    if (r.ok) {
+      toast.success(`Exportado: ${r.filename} (${r.quantidade} registros)`);
+      qc.invalidateQueries();
+    } else {
+      toast.error(r.mensagem || "Falha na exportação");
+      r.erros?.slice(0, 5).forEach((e) => toast.error(`Linha ${e.linha} · ${e.campo}: ${e.mensagem}`));
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -42,11 +62,12 @@ function CronogramasList() {
               <TableHead>Empresas</TableHead>
               <TableHead>Atendimentos</TableHead>
               <TableHead>Total de horas</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {geracoes.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="py-16 text-center">
+              <TableRow><TableCell colSpan={7} className="py-16 text-center">
                 <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-muted"><CalendarClock className="h-6 w-6 text-muted-foreground" /></div>
                 <div className="mt-3 font-medium">Nenhum cronograma gerado</div>
                 <div className="text-sm text-muted-foreground">Gere um cronograma a partir da tela do projeto.</div>
@@ -64,6 +85,11 @@ function CronogramasList() {
                 <TableCell>{g.total_empresas}</TableCell>
                 <TableCell>{g.total_atendimentos}</TableCell>
                 <TableCell>{g.total_horas}h</TableCell>
+                <TableCell className="text-right">
+                  <Button size="sm" variant="outline" disabled={exporting === g.id} onClick={() => exportar(g.id)}>
+                    <FileSpreadsheet className="h-4 w-4" /> {exporting === g.id ? "Exportando…" : "Exportar"}
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
