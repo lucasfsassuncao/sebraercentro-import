@@ -246,6 +246,45 @@ export type Database = {
           },
         ]
       }
+      export_history: {
+        Row: {
+          data_exportacao: string
+          geracao_id: string | null
+          id: string
+          mensagem_erro: string | null
+          nome_arquivo: string
+          projeto_id: string | null
+          quantidade_registros: number
+          status: string
+          user_id: string
+          usuario: string | null
+        }
+        Insert: {
+          data_exportacao?: string
+          geracao_id?: string | null
+          id?: string
+          mensagem_erro?: string | null
+          nome_arquivo: string
+          projeto_id?: string | null
+          quantidade_registros?: number
+          status?: string
+          user_id: string
+          usuario?: string | null
+        }
+        Update: {
+          data_exportacao?: string
+          geracao_id?: string | null
+          id?: string
+          mensagem_erro?: string | null
+          nome_arquivo?: string
+          projeto_id?: string | null
+          quantidade_registros?: number
+          status?: string
+          user_id?: string
+          usuario?: string | null
+        }
+        Relationships: []
+      }
       feriados: {
         Row: {
           created_at: string
