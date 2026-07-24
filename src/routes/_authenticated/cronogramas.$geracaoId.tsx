@@ -77,12 +77,12 @@ function CronogramaDetail() {
 
     // Validações por empresa usando o motor inteligente
     for (const empresaId of Object.keys(linhasPorEmpresa)) {
-      const e = data.empresas.find((x) => x.id === empresaId);
+      const e = data?.empresas.find((x) => x.id === empresaId) as any;
       const arr = linhasPorEmpresa[empresaId];
       if (!e) continue;
 
       const etapasSel = ETAPAS.filter((t) => e[`etapa_${t.toLowerCase()}`]) as Etapa[];
-      const modeloEfetivo = e.modelo || data.projeto?.modelo;
+      const modeloEfetivo = e.modelo || data?.projeto?.modelo;
       const porteEfetivo = e.porte || "ME";
       const totalPrevisto = totalHoras(modeloEfetivo, porteEfetivo, etapasSel);
 
