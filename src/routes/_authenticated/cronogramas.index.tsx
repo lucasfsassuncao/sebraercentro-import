@@ -1,9 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, FileSpreadsheet } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
+import { ExportService } from "@/lib/export/export-service";
 
 export const Route = createFileRoute("/_authenticated/cronogramas/")({
   head: () => ({ meta: [{ title: "Cronogramas — Gestor Sebrae" }, { name: "description", content: "Cronogramas de atendimento gerados." }] }),
@@ -11,6 +15,9 @@ export const Route = createFileRoute("/_authenticated/cronogramas/")({
 });
 
 function CronogramasList() {
+  const qc = useQueryClient();
+  const [exporting, setExporting] = useState<string | null>(null);
+
   const { data } = useQuery({
     queryKey: ["cronograma-geracoes"],
     queryFn: async () => {
@@ -24,6 +31,19 @@ function CronogramasList() {
 
   const geracoes = data?.geracoes ?? [];
   const nome = (id: string) => data?.projetos.find((p) => p.id === id)?.nome ?? "—";
+
+  async function exportar(geracaoId: string) {
+    setExporting(geracaoId);
+    const r = await ExportService.exportarGeracao(geracaoId);
+    setExporting(null);
+    if (r.ok) {
+      toast.success(`Exportado: ${r.filename} (${r.quantidade} registros)`);
+      qc.invalidateQueries();
+    } else {
+      toast.error(r.mensagem || "Falha na exportação");
+      r.erros?.slice(0, 5).forEach((e) => toast.error(`Linha ${e.linha} · ${e.campo}: ${e.mensagem}`));
+    }
+  }
 
   return (
     <div className="space-y-6">
