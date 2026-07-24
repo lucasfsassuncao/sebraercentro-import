@@ -185,6 +185,22 @@ function CronogramaDetail() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" disabled={saving} onClick={async () => {
+            setSaving(true);
+            const r = await ExportService.exportarGeracao(geracaoId);
+            setSaving(false);
+            if (r.ok) {
+              toast.success(`Exportado: ${r.filename} (${r.quantidade} registros)`);
+              qc.invalidateQueries();
+            } else {
+              toast.error(r.mensagem || "Falha na exportação");
+              if (r.erros?.length) {
+                r.erros.slice(0, 5).forEach((e) => toast.error(`Linha ${e.linha} · ${e.campo}: ${e.mensagem}`));
+              }
+            }
+          }}>
+            <FileSpreadsheet className="h-4 w-4" /> Exportar Consultorias
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild><Button variant="outline" disabled={saving}><Trash2 className="h-4 w-4" /> Excluir</Button></AlertDialogTrigger>
             <AlertDialogContent>
