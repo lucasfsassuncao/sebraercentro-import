@@ -19,10 +19,12 @@ import { Route as AuthenticatedEmpresasRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCronogramasRouteImport } from './routes/_authenticated/cronogramas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedAtendimentosRouteImport } from './routes/_authenticated/atendimentos'
 import { Route as AuthenticatedProjetosIndexRouteImport } from './routes/_authenticated/projetos.index'
 import { Route as AuthenticatedCronogramasIndexRouteImport } from './routes/_authenticated/cronogramas.index'
 import { Route as AuthenticatedProjetosIdRouteImport } from './routes/_authenticated/projetos.$id'
 import { Route as AuthenticatedCronogramasGeracaoIdRouteImport } from './routes/_authenticated/cronogramas.$geracaoId'
+import { Route as AuthenticatedAtendimentosIdRouteImport } from './routes/_authenticated/atendimentos.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -75,6 +77,12 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAtendimentosRoute =
+  AuthenticatedAtendimentosRouteImport.update({
+    id: '/atendimentos',
+    path: '/atendimentos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjetosIndexRoute =
   AuthenticatedProjetosIndexRouteImport.update({
     id: '/',
@@ -98,17 +106,25 @@ const AuthenticatedCronogramasGeracaoIdRoute =
     path: '/$geracaoId',
     getParentRoute: () => AuthenticatedCronogramasRoute,
   } as any)
+const AuthenticatedAtendimentosIdRoute =
+  AuthenticatedAtendimentosIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAtendimentosRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/atendimentos': typeof AuthenticatedAtendimentosRouteWithChildren
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/cronogramas': typeof AuthenticatedCronogramasRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/projetos': typeof AuthenticatedProjetosRouteWithChildren
+  '/atendimentos/$id': typeof AuthenticatedAtendimentosIdRoute
   '/cronogramas/$geracaoId': typeof AuthenticatedCronogramasGeracaoIdRoute
   '/projetos/$id': typeof AuthenticatedProjetosIdRoute
   '/cronogramas/': typeof AuthenticatedCronogramasIndexRoute
@@ -118,10 +134,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/atendimentos': typeof AuthenticatedAtendimentosRouteWithChildren
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/atendimentos/$id': typeof AuthenticatedAtendimentosIdRoute
   '/cronogramas/$geracaoId': typeof AuthenticatedCronogramasGeracaoIdRoute
   '/projetos/$id': typeof AuthenticatedProjetosIdRoute
   '/cronogramas': typeof AuthenticatedCronogramasIndexRoute
@@ -133,12 +151,14 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/atendimentos': typeof AuthenticatedAtendimentosRouteWithChildren
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/cronogramas': typeof AuthenticatedCronogramasRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/empresas': typeof AuthenticatedEmpresasRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/projetos': typeof AuthenticatedProjetosRouteWithChildren
+  '/_authenticated/atendimentos/$id': typeof AuthenticatedAtendimentosIdRoute
   '/_authenticated/cronogramas/$geracaoId': typeof AuthenticatedCronogramasGeracaoIdRoute
   '/_authenticated/projetos/$id': typeof AuthenticatedProjetosIdRoute
   '/_authenticated/cronogramas/': typeof AuthenticatedCronogramasIndexRoute
@@ -150,12 +170,14 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/atendimentos'
     | '/configuracoes'
     | '/cronogramas'
     | '/dashboard'
     | '/empresas'
     | '/historico'
     | '/projetos'
+    | '/atendimentos/$id'
     | '/cronogramas/$geracaoId'
     | '/projetos/$id'
     | '/cronogramas/'
@@ -165,10 +187,12 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/atendimentos'
     | '/configuracoes'
     | '/dashboard'
     | '/empresas'
     | '/historico'
+    | '/atendimentos/$id'
     | '/cronogramas/$geracaoId'
     | '/projetos/$id'
     | '/cronogramas'
@@ -179,12 +203,14 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/sitemap.xml'
+    | '/_authenticated/atendimentos'
     | '/_authenticated/configuracoes'
     | '/_authenticated/cronogramas'
     | '/_authenticated/dashboard'
     | '/_authenticated/empresas'
     | '/_authenticated/historico'
     | '/_authenticated/projetos'
+    | '/_authenticated/atendimentos/$id'
     | '/_authenticated/cronogramas/$geracaoId'
     | '/_authenticated/projetos/$id'
     | '/_authenticated/cronogramas/'
@@ -270,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/atendimentos': {
+      id: '/_authenticated/atendimentos'
+      path: '/atendimentos'
+      fullPath: '/atendimentos'
+      preLoaderRoute: typeof AuthenticatedAtendimentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projetos/': {
       id: '/_authenticated/projetos/'
       path: '/'
@@ -298,8 +331,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCronogramasGeracaoIdRouteImport
       parentRoute: typeof AuthenticatedCronogramasRoute
     }
+    '/_authenticated/atendimentos/$id': {
+      id: '/_authenticated/atendimentos/$id'
+      path: '/$id'
+      fullPath: '/atendimentos/$id'
+      preLoaderRoute: typeof AuthenticatedAtendimentosIdRouteImport
+      parentRoute: typeof AuthenticatedAtendimentosRoute
+    }
   }
 }
+
+interface AuthenticatedAtendimentosRouteChildren {
+  AuthenticatedAtendimentosIdRoute: typeof AuthenticatedAtendimentosIdRoute
+}
+
+const AuthenticatedAtendimentosRouteChildren: AuthenticatedAtendimentosRouteChildren =
+  {
+    AuthenticatedAtendimentosIdRoute: AuthenticatedAtendimentosIdRoute,
+  }
+
+const AuthenticatedAtendimentosRouteWithChildren =
+  AuthenticatedAtendimentosRoute._addFileChildren(
+    AuthenticatedAtendimentosRouteChildren,
+  )
 
 interface AuthenticatedCronogramasRouteChildren {
   AuthenticatedCronogramasGeracaoIdRoute: typeof AuthenticatedCronogramasGeracaoIdRoute
@@ -334,6 +388,7 @@ const AuthenticatedProjetosRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAtendimentosRoute: typeof AuthenticatedAtendimentosRouteWithChildren
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCronogramasRoute: typeof AuthenticatedCronogramasRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -343,6 +398,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAtendimentosRoute: AuthenticatedAtendimentosRouteWithChildren,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCronogramasRoute: AuthenticatedCronogramasRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -363,3 +419,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
