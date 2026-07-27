@@ -247,6 +247,34 @@ export function CronogramaDialog({
                       <Plus className="h-4 w-4" /> Linha
                     </Button>
                   </div>
+                  <div className="grid grid-cols-1 gap-3 rounded-md border bg-muted/30 p-3 md:grid-cols-2">
+                    <div>
+                      <Label className="text-xs">Consultor (nome)</Label>
+                      <Input
+                        value={consultorPorEmpresa[e.id]?.consultor ?? ""}
+                        placeholder="Nome do consultor"
+                        onChange={(ev) =>
+                          setConsultorPorEmpresa((s) => ({
+                            ...s,
+                            [e.id]: { ...(s[e.id] ?? { cpf_consultor: "" }), consultor: ev.target.value },
+                          }))
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">CPF do consultor</Label>
+                      <Input
+                        value={maskCPF(consultorPorEmpresa[e.id]?.cpf_consultor ?? "")}
+                        placeholder="000.000.000-00"
+                        onChange={(ev) =>
+                          setConsultorPorEmpresa((s) => ({
+                            ...s,
+                            [e.id]: { ...(s[e.id] ?? { consultor: "" }), cpf_consultor: onlyDigits(ev.target.value) },
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
                   <div className="overflow-x-auto rounded-md border">
                     <Table>
                       <TableHeader>
