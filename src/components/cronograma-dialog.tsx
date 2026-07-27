@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
@@ -11,6 +12,9 @@ import { toast } from "sonner";
 import {
   ETAPAS, MAX_HORAS_DIA, blocosPorEtapa, gerarDatas, parseISO, proximoAposDiaUtil, toISO, type Etapa,
 } from "@/lib/horas";
+import { AtendimentoValidacaoService } from "@/lib/services/atendimento-validacao.service";
+import { maskCPF, onlyDigits } from "@/lib/masks";
+
 
 type Projeto = any;
 type Empresa = any;
@@ -28,6 +32,11 @@ export function CronogramaDialog({
   const qc = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [porEmpresa, setPorEmpresa] = useState<Record<string, Linha[]>>({});
+  // Consultor por empresa — permite que empresas do mesmo projeto tenham consultores diferentes.
+  // Default: herda cpf_consultor/consultor do projeto (compatibilidade).
+  const [consultorPorEmpresa, setConsultorPorEmpresa] = useState<
+    Record<string, { consultor: string; cpf_consultor: string }>
+  >({});
 
   const alvos = useMemo(
     () => empresas.filter((e) => ETAPAS.some((t) => e[`etapa_${t.toLowerCase()}`])),
@@ -37,6 +46,7 @@ export function CronogramaDialog({
   useEffect(() => {
     if (!open) return;
     const inicial: Record<string, Linha[]> = {};
+    const cons: Record<string, { consultor: string; cpf_consultor: string }> = {};
     for (const e of alvos) {
       const etapasSel = ETAPAS.filter((t) => e[`etapa_${t.toLowerCase()}`]) as Etapa[];
       const blocos = blocosPorEtapa(projeto.modelo, e.porte, etapasSel);
@@ -52,9 +62,15 @@ export function CronogramaDialog({
         etapa: b.etapa,
         descricao: projeto.descricao_padrao ?? "",
       }));
+      cons[e.id] = {
+        consultor: projeto.consultor ?? "",
+        cpf_consultor: projeto.cpf_consultor ?? "",
+      };
     }
     setPorEmpresa(inicial);
+    setConsultorPorEmpresa(cons);
   }, [open, alvos, projeto]);
+
 
   function updateLinha(empresaId: string, idx: number, patch: Partial<Linha>) {
     setPorEmpresa((s) => {
@@ -91,13 +107,36 @@ export function CronogramaDialog({
   async function salvar() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    // validações
+    // validações de horas
     for (const arr of Object.values(porEmpresa)) {
       for (const l of arr) {
         if (Number(l.horas) > MAX_HORAS_DIA) return toast.error("Nenhum atendimento pode ter mais de 8h");
         if (Number(l.horas) <= 0) return toast.error("Horas devem ser maiores que zero");
       }
     }
+
+    // Validação de conflito de agenda do consultor (cpf_consultor + data)
+    const paraValidar: { cpfConsultor: string; data: string; ref?: string }[] = [];
+    for (const empresaId of Object.keys(porEmpresa)) {
+      const e = alvos.find((x) => x.id === empresaId);
+      const cpf = onlyDigits(consultorPorEmpresa[empresaId]?.cpf_consultor ?? "");
+      if (!cpf) continue;
+      for (const l of porEmpresa[empresaId]) {
+        paraValidar.push({
+          cpfConsultor: cpf,
+          data: l.data,
+          ref: `${e?.razao_social ?? empresaId} · ${l.data}`,
+        });
+      }
+    }
+    const val = await AtendimentoValidacaoService.validarLote(paraValidar);
+    if (!val.ok) {
+      val.conflitos.slice(0, 5).forEach((c) =>
+        toast.error(`Conflito: ${c.ref ?? ""} — ${c.mensagem}`),
+      );
+      return;
+    }
+
     setSaving(true);
 
     // Cria geração
@@ -120,6 +159,7 @@ export function CronogramaDialog({
     for (const empresaId of Object.keys(porEmpresa)) {
       const e = alvos.find((x) => x.id === empresaId);
       const arr = porEmpresa[empresaId];
+      const cons = consultorPorEmpresa[empresaId] ?? { consultor: "", cpf_consultor: "" };
       arr.forEach((l, idx) => {
         linhas.push({
           user_id: u.user!.id,
@@ -130,8 +170,8 @@ export function CronogramaDialog({
           horas: Number(l.horas) || 0,
           etapa: l.etapa,
           ordem: idx,
-          consultor: projeto.consultor,
-          cpf_consultor: projeto.cpf_consultor,
+          consultor: cons.consultor || projeto.consultor,
+          cpf_consultor: onlyDigits(cons.cpf_consultor || projeto.cpf_consultor || ""),
           municipio: projeto.municipio,
           codigo_ibge: projeto.codigo_ibge,
           codigo_tema: projeto.codigo_tema,
@@ -141,6 +181,7 @@ export function CronogramaDialog({
           descricao: l.descricao,
         });
       });
+
 
       // Atualiza horas_lancadas e ultima_data na empresa
       const totalEmpresa = arr.reduce((s, l) => s + Number(l.horas || 0), 0);
@@ -205,6 +246,34 @@ export function CronogramaDialog({
                     <Button size="sm" variant="outline" onClick={() => adicionarLinha(e.id)}>
                       <Plus className="h-4 w-4" /> Linha
                     </Button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 rounded-md border bg-muted/30 p-3 md:grid-cols-2">
+                    <div>
+                      <Label className="text-xs">Consultor (nome)</Label>
+                      <Input
+                        value={consultorPorEmpresa[e.id]?.consultor ?? ""}
+                        placeholder="Nome do consultor"
+                        onChange={(ev) =>
+                          setConsultorPorEmpresa((s) => ({
+                            ...s,
+                            [e.id]: { ...(s[e.id] ?? { cpf_consultor: "" }), consultor: ev.target.value },
+                          }))
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">CPF do consultor</Label>
+                      <Input
+                        value={maskCPF(consultorPorEmpresa[e.id]?.cpf_consultor ?? "")}
+                        placeholder="000.000.000-00"
+                        onChange={(ev) =>
+                          setConsultorPorEmpresa((s) => ({
+                            ...s,
+                            [e.id]: { ...(s[e.id] ?? { consultor: "" }), cpf_consultor: onlyDigits(ev.target.value) },
+                          }))
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="overflow-x-auto rounded-md border">
                     <Table>
