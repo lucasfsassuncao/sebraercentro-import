@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
@@ -11,6 +12,9 @@ import { toast } from "sonner";
 import {
   ETAPAS, MAX_HORAS_DIA, blocosPorEtapa, gerarDatas, parseISO, proximoAposDiaUtil, toISO, type Etapa,
 } from "@/lib/horas";
+import { AtendimentoValidacaoService } from "@/lib/services/atendimento-validacao.service";
+import { maskCPF, onlyDigits } from "@/lib/masks";
+
 
 type Projeto = any;
 type Empresa = any;
