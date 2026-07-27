@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { AtendimentoExportMapper, type MapperInputAtendimento } from "./mapper-atendimentos";
+
 import { ExportValidator, type ExportValidationError } from "./validator";
 import { buildConsultoriasXLSX, downloadXLSX } from "./excel-builder";
 
