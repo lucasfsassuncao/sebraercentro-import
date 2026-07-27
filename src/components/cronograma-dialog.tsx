@@ -107,13 +107,36 @@ export function CronogramaDialog({
   async function salvar() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    // validações
+    // validações de horas
     for (const arr of Object.values(porEmpresa)) {
       for (const l of arr) {
         if (Number(l.horas) > MAX_HORAS_DIA) return toast.error("Nenhum atendimento pode ter mais de 8h");
         if (Number(l.horas) <= 0) return toast.error("Horas devem ser maiores que zero");
       }
     }
+
+    // Validação de conflito de agenda do consultor (cpf_consultor + data)
+    const paraValidar: { cpfConsultor: string; data: string; ref?: string }[] = [];
+    for (const empresaId of Object.keys(porEmpresa)) {
+      const e = alvos.find((x) => x.id === empresaId);
+      const cpf = onlyDigits(consultorPorEmpresa[empresaId]?.cpf_consultor ?? "");
+      if (!cpf) continue;
+      for (const l of porEmpresa[empresaId]) {
+        paraValidar.push({
+          cpfConsultor: cpf,
+          data: l.data,
+          ref: `${e?.razao_social ?? empresaId} · ${l.data}`,
+        });
+      }
+    }
+    const val = await AtendimentoValidacaoService.validarLote(paraValidar);
+    if (!val.ok) {
+      val.conflitos.slice(0, 5).forEach((c) =>
+        toast.error(`Conflito: ${c.ref ?? ""} — ${c.mensagem}`),
+      );
+      return;
+    }
+
     setSaving(true);
 
     // Cria geração
@@ -136,6 +159,7 @@ export function CronogramaDialog({
     for (const empresaId of Object.keys(porEmpresa)) {
       const e = alvos.find((x) => x.id === empresaId);
       const arr = porEmpresa[empresaId];
+      const cons = consultorPorEmpresa[empresaId] ?? { consultor: "", cpf_consultor: "" };
       arr.forEach((l, idx) => {
         linhas.push({
           user_id: u.user!.id,
@@ -146,8 +170,8 @@ export function CronogramaDialog({
           horas: Number(l.horas) || 0,
           etapa: l.etapa,
           ordem: idx,
-          consultor: projeto.consultor,
-          cpf_consultor: projeto.cpf_consultor,
+          consultor: cons.consultor || projeto.consultor,
+          cpf_consultor: onlyDigits(cons.cpf_consultor || projeto.cpf_consultor || ""),
           municipio: projeto.municipio,
           codigo_ibge: projeto.codigo_ibge,
           codigo_tema: projeto.codigo_tema,
@@ -157,6 +181,7 @@ export function CronogramaDialog({
           descricao: l.descricao,
         });
       });
+
 
       // Atualiza horas_lancadas e ultima_data na empresa
       const totalEmpresa = arr.reduce((s, l) => s + Number(l.horas || 0), 0);
