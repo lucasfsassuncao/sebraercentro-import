@@ -32,6 +32,11 @@ export function CronogramaDialog({
   const qc = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [porEmpresa, setPorEmpresa] = useState<Record<string, Linha[]>>({});
+  // Consultor por empresa — permite que empresas do mesmo projeto tenham consultores diferentes.
+  // Default: herda cpf_consultor/consultor do projeto (compatibilidade).
+  const [consultorPorEmpresa, setConsultorPorEmpresa] = useState<
+    Record<string, { consultor: string; cpf_consultor: string }>
+  >({});
 
   const alvos = useMemo(
     () => empresas.filter((e) => ETAPAS.some((t) => e[`etapa_${t.toLowerCase()}`])),
@@ -41,6 +46,7 @@ export function CronogramaDialog({
   useEffect(() => {
     if (!open) return;
     const inicial: Record<string, Linha[]> = {};
+    const cons: Record<string, { consultor: string; cpf_consultor: string }> = {};
     for (const e of alvos) {
       const etapasSel = ETAPAS.filter((t) => e[`etapa_${t.toLowerCase()}`]) as Etapa[];
       const blocos = blocosPorEtapa(projeto.modelo, e.porte, etapasSel);
@@ -56,9 +62,15 @@ export function CronogramaDialog({
         etapa: b.etapa,
         descricao: projeto.descricao_padrao ?? "",
       }));
+      cons[e.id] = {
+        consultor: projeto.consultor ?? "",
+        cpf_consultor: projeto.cpf_consultor ?? "",
+      };
     }
     setPorEmpresa(inicial);
+    setConsultorPorEmpresa(cons);
   }, [open, alvos, projeto]);
+
 
   function updateLinha(empresaId: string, idx: number, patch: Partial<Linha>) {
     setPorEmpresa((s) => {
