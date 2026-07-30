@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { maskCPF, maskCNPJ } from "@/lib/masks";
+import { maskCPF, maskCNPJ, onlyDigits } from "@/lib/masks";
 import { ETAPAS, totalHoras, type Etapa } from "@/lib/horas";
 
 type Empresa = Record<string, any>;
