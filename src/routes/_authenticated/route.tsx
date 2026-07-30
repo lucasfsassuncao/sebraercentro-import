@@ -37,6 +37,7 @@ const nav = [
   { title: "Cronogramas", to: "/cronogramas", icon: CalendarClock },
   { title: "Histórico", to: "/historico", icon: History },
   { title: "Configurações", to: "/configuracoes", icon: Settings },
+  { title: "Admin", to: "/admin", icon: ShieldCheck },
 ] as const;
 
 function AppSidebar() {
