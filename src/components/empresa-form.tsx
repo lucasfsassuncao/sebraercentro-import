@@ -32,7 +32,7 @@ export function EmpresaForm({
 
   const { data: projetos } = useQuery({
     queryKey: ["projetos-select"],
-    queryFn: async () => (await supabase.from("projetos").select("id,nome,modelo").order("nome")).data ?? [],
+    queryFn: async () => (await supabase.from("projetos").select("id,nome,modelo,consultor,cpf_consultor").order("nome")).data ?? [],
     enabled: open,
   });
 
