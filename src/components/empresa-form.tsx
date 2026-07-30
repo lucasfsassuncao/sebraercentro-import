@@ -16,6 +16,7 @@ type Empresa = Record<string, any>;
 
 const empty: Empresa = {
   razao_social: "", cnpj: "", cpf_cliente: "", porte: "ME",
+  consultor: "", cpf_consultor: "",
   etapa_t0: false, etapa_t1: false, etapa_t2: false, etapa_t3: false, etapa_t4: false,
   horas_previstas: 0, horas_lancadas: 0,
   status: "pendente", observacoes: "", projeto_id: "",
