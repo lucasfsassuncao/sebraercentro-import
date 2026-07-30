@@ -67,8 +67,8 @@ export function ProjetoForm({ trigger, projeto, onSaved }: { trigger: React.Reac
             </div>
             <div><Label>Município</Label><Input value={form.municipio ?? ""} onChange={(e) => set("municipio", e.target.value)} /></div>
             <div><Label>Código IBGE</Label><Input value={form.codigo_ibge ?? ""} onChange={(e) => set("codigo_ibge", e.target.value)} /></div>
-            <div><Label>Consultor responsável</Label><Input value={form.consultor ?? ""} onChange={(e) => set("consultor", e.target.value)} /></div>
-            <div><Label>CPF do consultor</Label><Input value={form.cpf_consultor ?? ""} onChange={(e) => set("cpf_consultor", maskCPF(e.target.value))} /></div>
+            <div><Label>Consultor padrão (opcional)</Label><Input value={form.consultor ?? ""} onChange={(e) => set("consultor", e.target.value)} placeholder="Herdado pelas empresas sem consultor" /></div>
+            <div><Label>CPF do consultor padrão</Label><Input value={form.cpf_consultor ?? ""} onChange={(e) => set("cpf_consultor", maskCPF(e.target.value))} /></div>
             <div><Label>Data inicial</Label><Input type="date" value={form.data_inicial ?? ""} onChange={(e) => set("data_inicial", e.target.value)} /></div>
             <div>
               <Label>Status</Label>
