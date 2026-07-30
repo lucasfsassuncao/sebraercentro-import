@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, FolderKanban, Building2, History, Settings, ClipboardList, LogOut, CalendarClock } from "lucide-react";
+import { LayoutDashboard, FolderKanban, Building2, History, Settings, ClipboardList, LogOut, CalendarClock, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
