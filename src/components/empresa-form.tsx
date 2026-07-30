@@ -9,13 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { maskCPF, maskCNPJ } from "@/lib/masks";
+import { maskCPF, maskCNPJ, onlyDigits } from "@/lib/masks";
 import { ETAPAS, totalHoras, type Etapa } from "@/lib/horas";
 
 type Empresa = Record<string, any>;
 
 const empty: Empresa = {
   razao_social: "", cnpj: "", cpf_cliente: "", porte: "ME",
+  consultor: "", cpf_consultor: "",
   etapa_t0: false, etapa_t1: false, etapa_t2: false, etapa_t3: false, etapa_t4: false,
   horas_previstas: 0, horas_lancadas: 0,
   status: "pendente", observacoes: "", projeto_id: "",
@@ -31,7 +32,7 @@ export function EmpresaForm({
 
   const { data: projetos } = useQuery({
     queryKey: ["projetos-select"],
-    queryFn: async () => (await supabase.from("projetos").select("id,nome,modelo").order("nome")).data ?? [],
+    queryFn: async () => (await supabase.from("projetos").select("id,nome,modelo,consultor,cpf_consultor").order("nome")).data ?? [],
     enabled: open,
   });
 
@@ -105,6 +106,25 @@ export function EmpresaForm({
             <div><Label>Razão Social</Label><Input value={form.razao_social} onChange={(e) => set("razao_social", e.target.value)} /></div>
             <div><Label>CNPJ</Label><Input value={form.cnpj ?? ""} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))} /></div>
             <div><Label>CPF do Cliente</Label><Input value={form.cpf_cliente ?? ""} onChange={(e) => set("cpf_cliente", maskCPF(e.target.value))} /></div>
+            <div>
+              <Label>Consultor responsável</Label>
+              <Input
+                value={form.consultor ?? ""}
+                placeholder={projetoSel?.consultor ?? "Nome do consultor"}
+                onChange={(e) => set("consultor", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>CPF do consultor</Label>
+              <Input
+                value={maskCPF(form.cpf_consultor ?? "")}
+                placeholder={projetoSel?.cpf_consultor ? maskCPF(projetoSel.cpf_consultor) : "000.000.000-00"}
+                onChange={(e) => set("cpf_consultor", onlyDigits(e.target.value))}
+              />
+              <div className="mt-1 text-xs text-muted-foreground">
+                Usado nos atendimentos desta empresa e na validação de conflito de agenda.
+              </div>
+            </div>
             <div>
               <Label>Status</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v)}>

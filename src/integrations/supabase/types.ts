@@ -175,7 +175,9 @@ export type Database = {
       empresas: {
         Row: {
           cnpj: string | null
+          consultor: string | null
           cpf_cliente: string | null
+          cpf_consultor: string | null
           created_at: string
           etapa_t0: boolean
           etapa_t1: boolean
@@ -196,7 +198,9 @@ export type Database = {
         }
         Insert: {
           cnpj?: string | null
+          consultor?: string | null
           cpf_cliente?: string | null
+          cpf_consultor?: string | null
           created_at?: string
           etapa_t0?: boolean
           etapa_t1?: boolean
@@ -217,7 +221,9 @@ export type Database = {
         }
         Update: {
           cnpj?: string | null
+          consultor?: string | null
           cpf_cliente?: string | null
+          cpf_consultor?: string | null
           created_at?: string
           etapa_t0?: boolean
           etapa_t1?: boolean

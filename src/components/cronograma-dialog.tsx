@@ -63,8 +63,8 @@ export function CronogramaDialog({
         descricao: projeto.descricao_padrao ?? "",
       }));
       cons[e.id] = {
-        consultor: projeto.consultor ?? "",
-        cpf_consultor: projeto.cpf_consultor ?? "",
+        consultor: e.consultor || projeto.consultor || "",
+        cpf_consultor: onlyDigits(e.cpf_consultor || projeto.cpf_consultor || ""),
       };
     }
     setPorEmpresa(inicial);
