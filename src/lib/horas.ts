@@ -1,9 +1,11 @@
 // Tabela oficial de horas por Modelo / Porte / Etapa
-export type Modelo = "Manufatura Enxuta" | "Eficiência Energética";
+export type Modelo = "Manufatura Enxuta" | "Eficiência Energética" | "Alvo";
 export type Porte = "ME" | "EPP";
 export type Etapa = "T0" | "T1" | "T2" | "T3" | "T4";
 
 export const ETAPAS: Etapa[] = ["T0", "T1", "T2", "T3", "T4"];
+
+export const MODELOS: Modelo[] = ["Manufatura Enxuta", "Eficiência Energética", "Alvo"];
 
 export const TABELA_HORAS: Record<Modelo, Record<Porte, Record<Etapa, number>>> = {
   "Manufatura Enxuta": {
@@ -14,9 +16,35 @@ export const TABELA_HORAS: Record<Modelo, Record<Porte, Record<Etapa, number>>> 
     ME:  { T0: 4, T1: 6, T2: 46, T3: 16, T4: 8 },
     EPP: { T0: 4, T1: 6, T2: 62, T3: 30, T4: 8 },
   },
+  // Modelo Alvo: duas etapas de 2h cada, independente do porte da empresa.
+  "Alvo": {
+    ME:  { T0: 2, T1: 2, T2: 0, T3: 0, T4: 0 },
+    EPP: { T0: 2, T1: 2, T2: 0, T3: 0, T4: 0 },
+  },
 };
 
 export const MAX_HORAS_DIA = 8;
+
+/** Horários fixos de atendimento do modelo Alvo. */
+export const HORARIOS_ATENDIMENTO = ["08:00", "10:00", "12:00", "14:00"];
+
+/** Máximo de clientes distintos que um consultor pode atender no mesmo dia (modelos por horário). */
+export const MAX_ATENDIMENTOS_DIA_CONSULTOR = HORARIOS_ATENDIMENTO.length;
+
+/** Modelos que trabalham com horários fixos no dia (em vez de dia inteiro). */
+export function modeloUsaHorarios(modelo: string | null | undefined): boolean {
+  return modelo === "Alvo";
+}
+
+/** Modelos que não diferenciam ME/EPP. */
+export function modeloValidaPorte(modelo: string | null | undefined): boolean {
+  return modelo !== "Alvo";
+}
+
+/** Etapas disponíveis por modelo. */
+export function etapasDoModelo(modelo: string | null | undefined): Etapa[] {
+  return modelo === "Alvo" ? ["T0", "T1"] : ETAPAS;
+}
 
 export function horasPorEtapa(modelo: Modelo | string | null | undefined, porte: Porte | string | null | undefined, etapa: Etapa): number {
   const m = TABELA_HORAS[(modelo as Modelo)];
@@ -24,6 +52,7 @@ export function horasPorEtapa(modelo: Modelo | string | null | undefined, porte:
   const p = m[(porte as Porte)] ?? m.ME;
   return p[etapa] ?? 0;
 }
+
 
 export function totalHoras(modelo: string | null | undefined, porte: string | null | undefined, etapasSelecionadas: Etapa[]): number {
   return etapasSelecionadas.reduce((s, e) => s + horasPorEtapa(modelo, porte, e), 0);
