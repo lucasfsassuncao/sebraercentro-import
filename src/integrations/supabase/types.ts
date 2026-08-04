@@ -103,6 +103,7 @@ export type Database = {
           empresa_id: string
           etapa: string | null
           geracao_id: string | null
+          hora: string | null
           horas: number
           id: string
           municipio: string | null
@@ -125,6 +126,7 @@ export type Database = {
           empresa_id: string
           etapa?: string | null
           geracao_id?: string | null
+          hora?: string | null
           horas?: number
           id?: string
           municipio?: string | null
@@ -147,6 +149,7 @@ export type Database = {
           empresa_id?: string
           etapa?: string | null
           geracao_id?: string | null
+          hora?: string | null
           horas?: number
           id?: string
           municipio?: string | null

@@ -9,7 +9,8 @@ import { ArrowLeft, Save, Trash2, FileSpreadsheet } from "lucide-react";
 import { ExportService } from "@/lib/export/export-service";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MAX_HORAS_DIA, ETAPAS, totalHoras, type Etapa } from "@/lib/horas";
+import { MAX_HORAS_DIA, ETAPAS, HORARIOS_ATENDIMENTO, totalHoras, type Etapa } from "@/lib/horas";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -97,7 +98,7 @@ function CronogramaDetail() {
     // Salva as alterações das linhas existentes
     for (const r of rows) {
       const { error } = await supabase.from("cronogramas").update({
-        data: r.data, horas: Number(r.horas), etapa: r.etapa, descricao: r.descricao,
+        data: r.data, hora: r.hora || null, horas: Number(r.horas), etapa: r.etapa, descricao: r.descricao,
       }).eq("id", r.id);
       if (error) {
         setSaving(false);
@@ -221,6 +222,7 @@ function CronogramaDetail() {
             <TableRow>
               <TableHead>Empresa</TableHead>
               <TableHead className="w-40">Data</TableHead>
+              <TableHead className="w-28">Horário</TableHead>
               <TableHead className="w-24">Horas</TableHead>
               <TableHead className="w-24">Etapa</TableHead>
               <TableHead>Descrição</TableHead>
@@ -228,11 +230,20 @@ function CronogramaDetail() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length === 0 && <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Nenhuma linha.</TableCell></TableRow>}
+            {rows.length === 0 && <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">Nenhuma linha.</TableCell></TableRow>}
             {rows.map((r, i) => (
               <TableRow key={r.id}>
                 <TableCell className="text-xs">{empresaNome(r.empresa_id)}</TableCell>
                 <TableCell><Input type="date" value={r.data ?? ""} onChange={(e) => updateRow(i, { data: e.target.value })} /></TableCell>
+                <TableCell>
+                  <Select value={r.hora ?? "sem"} onValueChange={(v) => updateRow(i, { hora: v === "sem" ? null : v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sem">—</SelectItem>
+                      {HORARIOS_ATENDIMENTO.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
                 <TableCell><Input type="number" step="0.5" max={MAX_HORAS_DIA} value={r.horas ?? 0} onChange={(e) => updateRow(i, { horas: Math.min(MAX_HORAS_DIA, Number(e.target.value) || 0) })} /></TableCell>
                 <TableCell><Input value={r.etapa ?? ""} onChange={(e) => updateRow(i, { etapa: e.target.value })} /></TableCell>
                 <TableCell><Input value={r.descricao ?? ""} onChange={(e) => updateRow(i, { descricao: e.target.value })} /></TableCell>

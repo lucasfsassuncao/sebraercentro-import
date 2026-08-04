@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  ETAPAS, 
+  etapasDoModelo,
+  modeloUsaHorarios,
+  HORARIOS_ATENDIMENTO,
   MAX_HORAS_DIA, 
   blocosPorEtapa, 
   parseISO, 
@@ -55,6 +57,7 @@ export interface LinhaCronograma {
   horas: number;
   etapa: Etapa;
   descricao: string;
+  hora?: string | null;
 }
 
 export interface ValidacaoResultado {
@@ -93,10 +96,12 @@ export function gerarLinhasParaEmpresa(
   empresa: Empresa,
   feriados: Set<string> = new Set()
 ): LinhaCronograma[] {
-  const etapasSel = ETAPAS.filter((t) => empresa[`etapa_${t.toLowerCase()}` as keyof Empresa]) as Etapa[];
-  
   // O modelo da empresa tem prioridade sobre o modelo do projeto
   const modeloEfetivo = empresa.modelo || projeto.modelo;
+  const etapasSel = etapasDoModelo(modeloEfetivo).filter(
+    (t) => empresa[`etapa_${t.toLowerCase()}` as keyof Empresa],
+  ) as Etapa[];
+
   const porteEfetivo = empresa.porte || "ME";
   const blocos = blocosPorEtapa(modeloEfetivo, porteEfetivo, etapasSel);
   
@@ -117,10 +122,13 @@ export function gerarLinhasParaEmpresa(
   
   const datas = gerarDatas(base, blocos.length, feriados);
   
+  const usaHorarios = modeloUsaHorarios(modeloEfetivo);
+
   return blocos.map((b, i) => ({
     data: datas[i],
     horas: b.horas,
     etapa: b.etapa,
+    hora: usaHorarios ? HORARIOS_ATENDIMENTO[0] : null,
     descricao: empresa.descricao || projeto.descricao_padrao || "",
   }));
 }
@@ -129,7 +137,7 @@ export function gerarLinhasParaEmpresa(
  * Valida se um conjunto de linhas de atendimento é consistente e respeita as regras de negócio.
  */
 export function validarLinhasCronograma(
-  linhas: { data: string; horas: number; etapa: string; id?: string }[],
+  linhas: { data: string; horas: number; etapa: string; hora?: string | null; id?: string }[],
   horasPrevistas: number
 ): ValidacaoResultado {
   let totalHoras = 0;
@@ -166,11 +174,17 @@ export function validarLinhasCronograma(
       };
     }
 
-    // Regra: Detectar datas duplicadas (um atendimento por dia por empresa)
-    if (datasVistas.has(l.data)) {
-      return { valido: false, message: `A data ${l.data} está duplicada para esta empresa.` };
+    // Regra: Detectar duplicidade de data (ou data+horário, quando o modelo usa horários)
+    const chave = l.hora ? `${l.data}|${l.hora}` : l.data;
+    if (datasVistas.has(chave)) {
+      return {
+        valido: false,
+        message: l.hora
+          ? `Já existe um atendimento em ${l.data} às ${l.hora} para esta empresa.`
+          : `A data ${l.data} está duplicada para esta empresa.`,
+      };
     }
-    datasVistas.add(l.data);
+    datasVistas.add(chave);
 
     totalHoras += horasNum;
   }
