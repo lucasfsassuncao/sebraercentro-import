@@ -351,6 +351,16 @@ export function CronogramaDialog({
                           <TableRow key={idx}>
                             <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
                             <TableCell><Input type="date" value={l.data} onChange={(ev) => updateLinha(e.id, idx, { data: ev.target.value })} /></TableCell>
+                            {usaHorarios && (
+                              <TableCell>
+                                <Select value={l.hora ?? ""} onValueChange={(v) => updateLinha(e.id, idx, { hora: v })}>
+                                  <SelectTrigger><SelectValue placeholder="Horário" /></SelectTrigger>
+                                  <SelectContent>
+                                    {HORARIOS_ATENDIMENTO.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                            )}
                             <TableCell>
                               <Input type="number" step="0.5" max={MAX_HORAS_DIA} value={l.horas}
                                 onChange={(ev) => updateLinha(e.id, idx, { horas: Math.min(MAX_HORAS_DIA, Number(ev.target.value) || 0) })} />
@@ -359,7 +369,7 @@ export function CronogramaDialog({
                               <Select value={l.etapa} onValueChange={(v) => updateLinha(e.id, idx, { etapa: v })}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  {ETAPAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                  {etapasDoModelo(projeto.modelo).map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                                 </SelectContent>
                               </Select>
                             </TableCell>
