@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { maskCPF, maskCNPJ, onlyDigits } from "@/lib/masks";
-import { ETAPAS, etapasDoModelo, modeloValidaPorte, totalHoras, type Etapa } from "@/lib/horas";
+import { etapasDoModelo, modeloValidaPorte, totalHoras, type Etapa } from "@/lib/horas";
 
 type Empresa = Record<string, any>;
 
