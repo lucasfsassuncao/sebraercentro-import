@@ -10,7 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  ETAPAS, MAX_HORAS_DIA, blocosPorEtapa, gerarDatas, parseISO, proximoAposDiaUtil, toISO, type Etapa,
+  ETAPAS, MAX_HORAS_DIA, blocosPorEtapa, gerarDatas, parseISO, proximoAposDiaUtil, proximoDiaUtil, toISO,
+  etapasDoModelo, modeloUsaHorarios, HORARIOS_ATENDIMENTO, type Etapa,
 } from "@/lib/horas";
 import { AtendimentoValidacaoService } from "@/lib/services/atendimento-validacao.service";
 import { maskCPF, onlyDigits } from "@/lib/masks";
@@ -24,6 +25,7 @@ type Linha = {
   horas: number;
   etapa: string;
   descricao: string;
+  hora?: string | null;
 };
 
 export function CronogramaDialog({
@@ -43,33 +45,76 @@ export function CronogramaDialog({
     [empresas],
   );
 
+  const usaHorarios = modeloUsaHorarios(projeto.modelo);
+
   useEffect(() => {
     if (!open) return;
     const inicial: Record<string, Linha[]> = {};
     const cons: Record<string, { consultor: string; cpf_consultor: string }> = {};
+    // Ocupação de horários por consultor/dia (modelos com horários fixos, ex.: Alvo)
+    const ocupacao = new Map<string, Set<string>>();
+
     for (const e of alvos) {
-      const etapasSel = ETAPAS.filter((t) => e[`etapa_${t.toLowerCase()}`]) as Etapa[];
+      const etapasSel = etapasDoModelo(projeto.modelo).filter(
+        (t) => e[`etapa_${t.toLowerCase()}`],
+      ) as Etapa[];
       const blocos = blocosPorEtapa(projeto.modelo, e.porte, etapasSel);
       const base = e.ultima_data
         ? proximoAposDiaUtil(parseISO(e.ultima_data))
         : projeto.data_inicial
           ? parseISO(projeto.data_inicial)
           : new Date();
-      const datas = gerarDatas(base, blocos.length);
-      inicial[e.id] = blocos.map((b, i) => ({
-        data: datas[i],
-        horas: b.horas,
-        etapa: b.etapa,
-        descricao: projeto.descricao_padrao ?? "",
-      }));
+
+      const cpf = onlyDigits(e.cpf_consultor || projeto.cpf_consultor || "");
+
+      if (usaHorarios) {
+        const linhas: Linha[] = [];
+        let cursor = proximoDiaUtil(base);
+        for (const b of blocos) {
+          let dia = toISO(cursor);
+          let slot: string | undefined;
+          // procura o primeiro horário livre do consultor; se o dia lotar, avança
+          for (let tentativa = 0; tentativa < 60; tentativa++) {
+            const key = `${cpf}|${dia}`;
+            const usados = ocupacao.get(key) ?? new Set<string>();
+            slot = HORARIOS_ATENDIMENTO.find((h) => !usados.has(h));
+            if (slot) {
+              usados.add(slot);
+              ocupacao.set(key, usados);
+              break;
+            }
+            cursor = proximoAposDiaUtil(cursor);
+            dia = toISO(cursor);
+          }
+          linhas.push({
+            data: dia,
+            hora: slot ?? HORARIOS_ATENDIMENTO[0],
+            horas: b.horas,
+            etapa: b.etapa,
+            descricao: projeto.descricao_padrao ?? "",
+          });
+          cursor = proximoAposDiaUtil(cursor);
+        }
+        inicial[e.id] = linhas;
+      } else {
+        const datas = gerarDatas(base, blocos.length);
+        inicial[e.id] = blocos.map((b, i) => ({
+          data: datas[i],
+          hora: null,
+          horas: b.horas,
+          etapa: b.etapa,
+          descricao: projeto.descricao_padrao ?? "",
+        }));
+      }
+
       cons[e.id] = {
         consultor: e.consultor || projeto.consultor || "",
-        cpf_consultor: onlyDigits(e.cpf_consultor || projeto.cpf_consultor || ""),
+        cpf_consultor: cpf,
       };
     }
     setPorEmpresa(inicial);
     setConsultorPorEmpresa(cons);
-  }, [open, alvos, projeto]);
+  }, [open, alvos, projeto, usaHorarios]);
 
 
   function updateLinha(empresaId: string, idx: number, patch: Partial<Linha>) {
@@ -87,7 +132,19 @@ export function CronogramaDialog({
       const arr = [...(s[empresaId] ?? [])];
       const ultima = arr[arr.length - 1]?.data;
       const prox = ultima ? toISO(proximoAposDiaUtil(parseISO(ultima))) : toISO(new Date());
-      arr.push({ data: prox, horas: MAX_HORAS_DIA, etapa: "T2", descricao: projeto.descricao_padrao ?? "" });
+      const etapasMod = etapasDoModelo(projeto.modelo);
+      if (usaHorarios) {
+        const usados = new Set(arr.filter((l) => l.data === (ultima ?? prox)).map((l) => l.hora));
+        arr.push({
+          data: ultima ?? prox,
+          hora: HORARIOS_ATENDIMENTO.find((h) => !usados.has(h)) ?? HORARIOS_ATENDIMENTO[0],
+          horas: 2,
+          etapa: etapasMod[0],
+          descricao: projeto.descricao_padrao ?? "",
+        });
+      } else {
+        arr.push({ data: prox, hora: null, horas: MAX_HORAS_DIA, etapa: "T2", descricao: projeto.descricao_padrao ?? "" });
+      }
       return { ...s, [empresaId]: arr };
     });
   }
@@ -116,7 +173,7 @@ export function CronogramaDialog({
     }
 
     // Validação de conflito de agenda do consultor (cpf_consultor + data)
-    const paraValidar: { cpfConsultor: string; data: string; ref?: string }[] = [];
+    const paraValidar: { cpfConsultor: string; data: string; hora?: string | null; ref?: string }[] = [];
     for (const empresaId of Object.keys(porEmpresa)) {
       const e = alvos.find((x) => x.id === empresaId);
       const cpf = onlyDigits(consultorPorEmpresa[empresaId]?.cpf_consultor ?? "");
@@ -125,7 +182,8 @@ export function CronogramaDialog({
         paraValidar.push({
           cpfConsultor: cpf,
           data: l.data,
-          ref: `${e?.razao_social ?? empresaId} · ${l.data}`,
+          hora: l.hora ?? null,
+          ref: `${e?.razao_social ?? empresaId} · ${l.data}${l.hora ? ` ${l.hora}` : ""}`,
         });
       }
     }
@@ -167,6 +225,7 @@ export function CronogramaDialog({
           empresa_id: empresaId,
           geracao_id: ger.id,
           data: l.data,
+          hora: l.hora ?? null,
           horas: Number(l.horas) || 0,
           etapa: l.etapa,
           ordem: idx,
