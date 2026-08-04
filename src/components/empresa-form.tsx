@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { maskCPF, maskCNPJ, onlyDigits } from "@/lib/masks";
-import { ETAPAS, totalHoras, type Etapa } from "@/lib/horas";
+import { ETAPAS, etapasDoModelo, modeloValidaPorte, totalHoras, type Etapa } from "@/lib/horas";
 
 type Empresa = Record<string, any>;
 
@@ -41,9 +41,11 @@ export function EmpresaForm({
   }, [open, empresa, projetoId]);
 
   const projetoSel = projetos?.find((p) => p.id === form.projeto_id);
+  const etapasDisponiveis = useMemo(() => etapasDoModelo(projetoSel?.modelo), [projetoSel?.modelo]);
+  const validaPorte = modeloValidaPorte(projetoSel?.modelo);
   const etapasSel = useMemo(
-    () => ETAPAS.filter((t) => form[`etapa_${t.toLowerCase()}`]) as Etapa[],
-    [form],
+    () => etapasDisponiveis.filter((t) => form[`etapa_${t.toLowerCase()}`]) as Etapa[],
+    [form, etapasDisponiveis],
   );
   const previstasCalc = useMemo(
     () => totalHoras(projetoSel?.modelo, form.porte, etapasSel),
@@ -93,7 +95,7 @@ export function EmpresaForm({
               </Select>
               {projetoSel?.modelo && <div className="mt-1 text-xs text-muted-foreground">Modelo: {projetoSel.modelo}</div>}
             </div>
-            <div>
+            <div className={validaPorte ? "" : "hidden"}>
               <Label>Porte</Label>
               <Select value={form.porte} onValueChange={(v) => set("porte", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -141,7 +143,7 @@ export function EmpresaForm({
           <div>
             <Label className="mb-2 block">Etapas concluídas</Label>
             <div className="flex flex-wrap gap-4">
-              {ETAPAS.map((t) => (
+              {etapasDisponiveis.map((t) => (
                 <label key={t} className="flex items-center gap-2 text-sm">
                   <Checkbox
                     checked={!!form[`etapa_${t.toLowerCase()}`]}
@@ -152,7 +154,7 @@ export function EmpresaForm({
               ))}
             </div>
             <div className="mt-2 text-xs text-muted-foreground">
-              Horas calculadas automaticamente conforme modelo e porte.
+              {validaPorte ? "Horas calculadas automaticamente conforme modelo e porte." : "Modelo Alvo: 2 etapas de 2h cada, sem diferenciação de porte."}
             </div>
           </div>
 

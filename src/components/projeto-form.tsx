@@ -62,6 +62,7 @@ export function ProjetoForm({ trigger, projeto, onSaved }: { trigger: React.Reac
                 <SelectContent>
                   <SelectItem value="Manufatura Enxuta">Manufatura Enxuta</SelectItem>
                   <SelectItem value="Eficiência Energética">Eficiência Energética</SelectItem>
+                  <SelectItem value="Alvo">Alvo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
