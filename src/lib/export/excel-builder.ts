@@ -1,11 +1,13 @@
 import ExcelJS from "exceljs";
 import { EXPORT_COLUMNS, type ConsultoriaExportDTO } from "./dto";
 
-function isoToBRDate(iso: string): string {
-  // yyyy-mm-dd -> dd/MM/yyyy
+function isoToBRDateTime(iso: string, hora: string): string {
+  // yyyy-mm-dd -> dd/MM/yyyy; concatena hora quando informada
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   if (!m) return iso;
-  return `${m[3]}/${m[2]}/${m[1]}`;
+  const data = `${m[3]}/${m[2]}/${m[1]}`;
+  const h = hora?.trim();
+  return h ? `${data} ${h}` : data;
 }
 
 /**
@@ -13,7 +15,7 @@ function isoToBRDate(iso: string): string {
  * - Aba única "Planilha1"
  * - Cabeçalhos exatamente como o layout
  * - Códigos e documentos como TEXTO (preserva zeros à esquerda)
- * - Data como dd/MM/yyyy
+ * - Data como dd/MM/yyyy HH:mm
  * - Horas com formato 0,00
  */
 export async function buildConsultoriasXLSX(dtos: ConsultoriaExportDTO[]): Promise<ArrayBuffer> {
@@ -39,7 +41,7 @@ export async function buildConsultoriasXLSX(dtos: ConsultoriaExportDTO[]): Promi
       codDisponibilizacao: d.codDisponibilizacao,
       documentoCliente:    d.documentoCliente,
       documentoEmpresa:    d.documentoEmpresa,
-      data:                isoToBRDate(d.data),
+      data:                isoToBRDateTime(d.data, d.hora),
       cpfConsultor:        d.cpfConsultor,
       horas:               Number(d.horas) || 0,
       descricao:           d.descricao,

@@ -10,7 +10,8 @@ export interface ConsultoriaExportDTO {
   codDisponibilizacao: string; // TEXTO (preserva zeros à esquerda)
   documentoCliente: string; // CPF, apenas dígitos
   documentoEmpresa: string; // CNPJ, apenas dígitos
-  data: string; // ISO yyyy-mm-dd (formatado depois como dd/MM/yyyy)
+  data: string; // ISO yyyy-mm-dd
+  hora: string; // HH:mm (pode vir vazio)
   cpfConsultor: string; // CPF, apenas dígitos ← CRÍTICO: agora vem de atendimento.consultor
   horas: number; // decimal
   descricao: string;
@@ -44,7 +45,7 @@ export const EXPORT_COLUMNS: {
     width: 20,
     type: "text",
   },
-  { header: "Data", key: "data", width: 12, type: "date" },
+  { header: "Data", key: "data", width: 18, type: "date" },
   { header: "Cpf_consultor", key: "cpfConsultor", width: 16, type: "text" },
   { header: "Horas", key: "horas", width: 8, type: "number" },
   { header: "Descricao", key: "descricao", width: 80, type: "text" },

@@ -8,6 +8,7 @@ import { onlyDigits } from "@/lib/masks";
 export interface MapperInput {
   linha: {
     data: string;
+    hora?: string | null;
     horas: number | string;
     descricao?: string | null;
     codigo_disponibilizacao?: string | null;
@@ -47,6 +48,7 @@ export const ConsultoriaExportMapper = {
       documentoCliente:    onlyDigits(pick(empresa?.cpf_cliente)),
       documentoEmpresa:    onlyDigits(pick(empresa?.cnpj)),
       data:                pick(linha.data),
+      hora:                pick(linha.hora),
       cpfConsultor:        onlyDigits(pick(linha.cpf_consultor, projeto?.cpf_consultor)),
       horas:               Number(linha.horas) || 0,
       descricao:           pick(linha.descricao),
