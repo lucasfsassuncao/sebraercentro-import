@@ -8,6 +8,7 @@ import { onlyDigits } from "@/lib/masks";
 export interface MapperInput {
   linha: {
     data: string;
+    hora?: string | null;
     horas: number | string;
     descricao?: string | null;
     codigo_disponibilizacao?: string | null;
