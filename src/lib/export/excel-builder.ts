@@ -41,7 +41,7 @@ export async function buildConsultoriasXLSX(dtos: ConsultoriaExportDTO[]): Promi
       codDisponibilizacao: d.codDisponibilizacao,
       documentoCliente:    d.documentoCliente,
       documentoEmpresa:    d.documentoEmpresa,
-      data:                isoToBRDate(d.data),
+      data:                isoToBRDateTime(d.data, d.hora),
       cpfConsultor:        d.cpfConsultor,
       horas:               Number(d.horas) || 0,
       descricao:           d.descricao,
