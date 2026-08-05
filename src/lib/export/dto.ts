@@ -10,7 +10,7 @@ export interface ConsultoriaExportDTO {
   codDisponibilizacao: string; // TEXTO (preserva zeros à esquerda)
   documentoCliente: string; // CPF, apenas dígitos
   documentoEmpresa: string; // CNPJ, apenas dígitos
-  data: string; // ISO yyyy-mm-dd (formatado depois como dd/MM/yyyy)
+  data: string; // ISO yyyy-mm-dd (formatado depois como dd/MM/yyyy HH:mm)
   cpfConsultor: string; // CPF, apenas dígitos ← CRÍTICO: agora vem de atendimento.consultor
   horas: number; // decimal
   descricao: string;
