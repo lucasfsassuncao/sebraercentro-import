@@ -15,7 +15,7 @@ function isoToBRDateTime(iso: string, hora: string): string {
  * - Aba única "Planilha1"
  * - Cabeçalhos exatamente como o layout
  * - Códigos e documentos como TEXTO (preserva zeros à esquerda)
- * - Data como dd/MM/yyyy
+ * - Data como dd/MM/yyyy HH:mm
  * - Horas com formato 0,00
  */
 export async function buildConsultoriasXLSX(dtos: ConsultoriaExportDTO[]): Promise<ArrayBuffer> {
