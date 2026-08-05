@@ -495,6 +495,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      recalcular_status_empresa: {
+        Args: { _empresa_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

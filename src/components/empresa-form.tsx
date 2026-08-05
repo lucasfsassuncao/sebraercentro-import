@@ -129,15 +129,22 @@ export function EmpresaForm({
             </div>
             <div>
               <Label>Status</Label>
-              <Select value={form.status} onValueChange={(v) => set("status", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="em_andamento">Em andamento</SelectItem>
-                  <SelectItem value="concluida">Concluída</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                readOnly
+                disabled
+                value={
+                  form.status === "concluida"
+                    ? "Concluída"
+                    : form.status === "em_andamento"
+                      ? "Em andamento"
+                      : "Pendente"
+                }
+              />
+              <div className="mt-1 text-xs text-muted-foreground">
+                Atualizado automaticamente conforme as horas lançadas no cronograma.
+              </div>
             </div>
+
           </div>
 
           <div>
