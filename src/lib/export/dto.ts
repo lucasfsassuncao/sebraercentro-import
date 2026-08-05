@@ -45,7 +45,7 @@ export const EXPORT_COLUMNS: {
     width: 20,
     type: "text",
   },
-  { header: "Data", key: "data", width: 12, type: "date" },
+  { header: "Data", key: "data", width: 18, type: "date" },
   { header: "Cpf_consultor", key: "cpfConsultor", width: 16, type: "text" },
   { header: "Horas", key: "horas", width: 8, type: "number" },
   { header: "Descricao", key: "descricao", width: 80, type: "text" },
