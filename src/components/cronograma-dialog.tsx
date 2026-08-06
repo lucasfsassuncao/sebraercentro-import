@@ -215,7 +215,6 @@ export function CronogramaDialog({
     // Linhas
     const linhas: any[] = [];
     for (const empresaId of Object.keys(porEmpresa)) {
-      const e = alvos.find((x) => x.id === empresaId);
       const arr = porEmpresa[empresaId];
       const cons = consultorPorEmpresa[empresaId] ?? { consultor: "", cpf_consultor: "" };
       arr.forEach((l, idx) => {
@@ -240,21 +239,16 @@ export function CronogramaDialog({
           descricao: l.descricao,
         });
       });
-
-
-      // Atualiza horas_lancadas e ultima_data na empresa
-      const totalEmpresa = arr.reduce((s, l) => s + Number(l.horas || 0), 0);
-      const ultima = arr.map((l) => l.data).sort().at(-1);
-      await supabase.from("empresas").update({
-        horas_lancadas: (Number(e?.horas_lancadas) || 0) + totalEmpresa,
-        ultima_data: ultima ?? e?.ultima_data ?? null,
-      }).eq("id", empresaId);
     }
 
     if (linhas.length) {
       const { error: errLin } = await supabase.from("cronogramas").insert(linhas);
       if (errLin) { setSaving(false); return toast.error(errLin.message); }
     }
+
+    // Horas lançadas, última data e status são recalculados automaticamente
+    // pelos gatilhos do banco após a inserção dos atendimentos.
+
 
     // Histórico
     await supabase.from("historico").insert({
